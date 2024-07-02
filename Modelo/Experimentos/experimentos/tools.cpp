@@ -1,42 +1,106 @@
-#include <stdio.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <esp_system.h>
-#include <ESP32Encoder.h>
-#include <math.h>
-#include "FS.h"
-#include "SPIFFS.h"
-#include <Wire.h>
-#include <MPU6050.h>
-
 #include "tools.h"
-
-// CONST VARIABLES
-const int ts = 10;
-const float f0 = 1;
-const float f1 = 20;
-const int T = 30;
-const int uT = T*1000000;
 
 // GLOBALS VARIABLES
 ESP32Encoder encoder_r;
 ESP32Encoder encoder_l;
 
 Data *data_array;
-Modes startMode = INIT; 
+Modes startMode; 
 
 MPU6050 mpu;
 int16_t ax_b, ay_b, az_b, gx_b, gy_b, gz_b;
 float ax, ay, az, gx, gy, gz;
-float tau = 0.98;
+float tau;
 float theta;
 
 char buffer[50];
-int count = 0;
-int flash_count = 0;
-int file_count = 0;
+int count;
+int flash_count;
+int file_count;
 
-float getAccelPitch(){
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels)
+{
+    Serial.printf("Listing directory: %s\r\n", dirname);
+
+    File root = fs.open(dirname);
+    if(!root){
+        Serial.println("- failed to open directory");
+        return;
+    }
+    if(!root.isDirectory()){
+        Serial.println(" - not a directory");
+        return;
+    }
+
+    File file = root.openNextFile();
+    while(file){
+        if(file.isDirectory()){
+            Serial.print("  DIR : ");
+            Serial.println(file.name());
+            if(levels){
+                listDir(fs, file.path(), levels -1);
+            }
+        } else {
+            Serial.print("  FILE: ");
+            Serial.print(file.name());
+            Serial.print("\tSIZE: ");
+            Serial.println(file.size());
+        }
+        file = root.openNextFile();
+    }
+}
+
+void motor(int PWM, int chanel) 
+{
+  int p1, p2;
+  if (chanel == L_CHANNEL) 
+  {
+    p1 = IN1;
+    p2 = IN2;
+  } else {
+    p1 = IN3;
+    p2 = IN4;
+  }
+  PWM = constrain(PWM, -100, 100);
+  PWM = map(PWM, -100, 100, -255, 255);
+  if (PWM == 0) 
+  {
+    digitalWrite(p1, LOW);
+    digitalWrite(p2, LOW);
+    return;
+  } else if (PWM > 0) 
+  {
+    digitalWrite(p1, LOW);
+    digitalWrite(p2, HIGH);
+  } else 
+  {
+    PWM = -PWM;
+    digitalWrite(p1, HIGH);
+    digitalWrite(p2, LOW);
+  }
+  ledcWrite(chanel, PWM);
+}
+
+int fileCountInit() 
+{
+  int file_count = 0;
+
+  File file = SPIFFS.open(FILE_COUNT_BKP, FILE_READ);
+  if(!file || file.isDirectory()){
+    file_count = 0;
+  }
+  while(file.available()){
+    file.read((uint8_t*)&file_count, sizeof(file_count));
+  }
+  file.close();
+
+  Serial.println("File count init = " + String(file_count));
+
+  return file_count;
+}
+
+float getAccelPitch()
+{
   getAccelGyro(&ax, &ay, &az, &gx, &gy, &gz);
   float accel_pitch = atan2(az, ay);
   return accel_pitch;
@@ -68,7 +132,8 @@ float updatePitch(float currentAngle, float loop_period)
   return pitch_f;
 }
 
-void PinSetup() {
+void PinSetup() // realiza o PinOut de todos os dispositivos
+{
   // Configuração dos pinos
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
@@ -98,7 +163,8 @@ void PinSetup() {
   digitalWrite(2, LOW);
 }
 
-void taskFlash(void* pvParameter) {
+void taskFlash(void* pvParameter) 
+{
   String filename = "/arquivo" + String(file_count) + ".csv";
   Serial.println(filename);
   File file = SPIFFS.open(filename, FILE_WRITE);
@@ -143,79 +209,8 @@ void taskFlash(void* pvParameter) {
   vTaskDelete(NULL);
 }
 
-void taskControl(void* pvParameter) {
-  pinMode(2, OUTPUT);
-
-  xTaskCreate(&taskFlash, "task_flash", 4096, NULL, 2, NULL);
-
-  Data data;
-  TickType_t init_loop_time;
-  unsigned long t0 = micros();
-  unsigned long time = t0;
-  unsigned long last_time = time;
-  float theta = getAccelPitch();
-  while(1) {
-    init_loop_time = xTaskGetTickCount();
-
-    float position_r = encoder_r.getCount();
-    float position_l = encoder_l.getCount();
-    theta = updatePitch(theta, (micros() - time)/(float)1e6);
-
-    time = micros();
-    int temp = (time - t0 + uT) % (2 * uT) - uT;
-    float t = abs(temp) / 1000000.0;
-
-    int pwm_value = (int)(MAX_PWM * sin(-2 * PI * f0 * f1 * T / (f1 - f0) * log(1 - (f1 - f0) / (f1 * T) * t)));
-    motor(pwm_value, L_CHANNEL);
-    motor(pwm_value, R_CHANNEL);
-    
-    data.t = (time - t0)/1000000.0;
-    data.u = pwm_value;
-    data.yr = position_r;
-    data.yl = position_l;
-    data.t_trig = t;
-    data.freq = f0 * f1 * T / ((f0 - f1) * t + f1 * T);
-    data.theta = theta;
-    data_array[count % BUFFER_SIZE] = data;
-    count++;
-
-    if (startMode == BUFFER_OVERFLOW) {
-      // digitalWrite(2, HIGH);
-      // while (startMode == BUFFER_OVERFLOW) {
-      //   vTaskDelay(pdMS_TO_TICKS(1));
-      // }
-      // digitalWrite(2, LOW);
-
-      motor(0, L_CHANNEL);
-      motor(0, R_CHANNEL);
-      printf("Buffer Overflow! Stop Simulation\n");
-      while (1) {
-        digitalWrite(2, HIGH);
-        vTaskDelay(pdMS_TO_TICKS(500));
-        digitalWrite(2, LOW);
-        vTaskDelay(pdMS_TO_TICKS(500));
-      }
-    }
-
-    if (time - t0 >= uT*SIMULATIONS) {
-      motor(0, L_CHANNEL);
-      motor(0, R_CHANNEL);
-
-      startMode = CONFIG;
-      digitalWrite(2, HIGH);
-
-      printf("End Control\n");
-      printf("Configuration Mode (l:list, f:format, r:read)\n");
-      break;
-    }
-
-    vTaskDelayUntil(&init_loop_time, pdMS_TO_TICKS(ts));
-  }
-
-  vTaskDelete(NULL);
-}
-
-void taskBlinkLed(void* pvParameter) {
+void taskBlinkLed(void* pvParameter) 
+{
   pinMode(2, OUTPUT);
   pinMode(0, INPUT);
 
@@ -240,9 +235,15 @@ void taskBlinkLed(void* pvParameter) {
   vTaskDelete(NULL);
 }
 
-void setup() {
-  Serial.begin(115200);
-  delay(500);
+void InitSetup()
+{
+
+  // Inicialização de variáveis
+  startMode = INIT;
+  tau = 0.98;
+  count = 0;
+  flash_count = 0;
+  file_count = 0;
 
   PinSetup();
 
@@ -267,70 +268,7 @@ void setup() {
     return;
   }
 
+  // Serial.println("Criando a TaskBlinkLed");
   xTaskCreate(&taskBlinkLed, "blink_led", 2048, NULL, 3, NULL);
   while (startMode == INIT) delay(100);
-
-  if (startMode == RUN) {
-    digitalWrite(2, LOW);
-    printf("Running Mode...\n");
-    xTaskCreate(&taskControl, "task_control", 4096, NULL, 1, NULL);
-  }
-  else if (startMode == CONFIG) {
-    digitalWrite(2, HIGH);
-    printf("Configuration Mode (l:list, f:format, r:read)\n");
-  }
-}
-
-void loop() {
-  if (Serial.available() >= 1) {
-    char command = Serial.read();
-
-    if (command == 'l') {
-      listDir(SPIFFS, "/", 0);
-    }
-
-    if (command == 'f') {
-      SPIFFS.format();
-      Serial.println("Memória formatada");
-    }
-    
-    if (command == 'r' || command == 'R') {
-      File root = SPIFFS.open("/");
-      if(!root){
-        Serial.println("- failed to open directory");
-        return;
-      }
-      if(!root.isDirectory()){
-        Serial.println(" - not a directory");
-        return;
-      }
-
-      File file = root.openNextFile();
-      while(file){
-        if (!file.isDirectory()) {
-          String filename = "/" + String(file.name());
-          File file = SPIFFS.open(filename.c_str());
-
-          Serial.println("Reading: " + filename);
-
-          if(!file || file.isDirectory()){
-            Serial.println("- failed to open file for reading");
-            return;
-          }
-
-          Serial.println("- read from file:");
-          while(file.available()){
-            Serial.write(file.read());
-          }
-          file.close();
-        }
-        file = root.openNextFile();
-      }
-
-      if (command == 'r') {
-        SPIFFS.format();
-        Serial.println("Memória formatada");
-      }
-    }
-  }
 }
