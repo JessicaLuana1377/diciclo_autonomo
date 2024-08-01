@@ -14,13 +14,10 @@
 #include "FS.h"
 #include "SPIFFS.h"
 
-// Pinos do encoderes
-#define ENCODER_DA_R 14
-#define ENCODER_DB_R 27 
-
-#define ENCODER_DA_L 32
-#define ENCODER_DB_L 33 
-
+#define ENCODER_C1_R 32
+#define ENCODER_C2_R 33 
+#define ENCODER_C1_L 14
+#define ENCODER_C2_L 27
 
 // Pinos dos motores
 #define IN1 16
@@ -35,18 +32,14 @@
 #define L_CHANNEL 0
 #define R_CHANNEL 1
 
+// Canais de PWM
+#define L_CHANNEL 0
+#define R_CHANNEL 1
+
 // Definições para o arquivo na flash
 #define FORMAT_SPIFFS_IF_FAILED true
 #define BUFFER_SIZE 2000
 #define FILE_COUNT_BKP "/file_count.bkp"
-
-// Offset para calibração da IMU
-#define X_ACCEL_OFFSET 761.77
-#define Y_ACCEL_OFFSET -1035.07
-#define Z_ACCEL_OFFSET 570.21
-#define X_GYRO_OFFSET -387.96
-#define Y_GYRO_OFFSET 48.65
-#define Z_GYRO_OFFSET 191.20
 
 // Microssegundos para segundos
 #define usTOs 1000000.0

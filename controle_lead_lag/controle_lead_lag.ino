@@ -143,7 +143,7 @@ void taskControl(void* pvParameter) {
     // esquerda
     dwheel_f_l = alpha_w*dwheel_f_l + (1-alpha_w)*(position_l - last_position_l)/(ts/1e3);
 
-    if (count % 10) {
+    if (count % 10 == 0) {
       error_x[0] = 0 - x;
 
       printf("x:%f,theta:%f,theta_ref:%f,u:%f\n", x, theta, theta_ref[0], 1*(k_B_x[1]*error_x[1] + k_B_x[2]*error_x[2]));

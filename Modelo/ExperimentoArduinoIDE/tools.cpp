@@ -120,8 +120,8 @@ void PinSetup() // realiza o PinOut de todos os dispositivos
 
   // Configuração dos encoders
   ESP32Encoder::useInternalWeakPullResistors = puType::up;
-	encoder_r.attachFullQuad(ENCODER_DA_R, ENCODER_DB_R);
-	encoder_l.attachFullQuad(ENCODER_DA_L, ENCODER_DB_L);
+	encoder_r.attachFullQuad(ENCODER_C1_R, ENCODER_C2_R);
+	encoder_l.attachFullQuad(ENCODER_C1_L, ENCODER_C2_L);
   encoder_r.clearCount();
   encoder_l.clearCount();
 

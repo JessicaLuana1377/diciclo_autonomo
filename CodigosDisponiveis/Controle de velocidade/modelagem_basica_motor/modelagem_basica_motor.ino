@@ -3,11 +3,10 @@
 #include <stdio.h>
 #include <driver/pcnt.h>
 
-#define ENCODER_C1_R 14
-#define ENCODER_C2_R 27 
-
-#define ENCODER_C1_L 33 
-#define ENCODER_C2_L 32
+#define ENCODER_C1_R 32
+#define ENCODER_C2_R 33 
+#define ENCODER_C1_L 14
+#define ENCODER_C2_L 27
 
 #define IN1 17
 #define IN2 16

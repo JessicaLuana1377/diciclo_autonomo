@@ -64,7 +64,7 @@ void taskControl(void* pvParameter) {
     // calculo da chirp
     int pwm_value = (int)(MAX_PWM * sin(-2 * PI * f0 * f1 * T / (f1 - f0) * log(1 - (f1 - f0) / (f1 * T) * t)));
     motor(pwm_value, L_CHANNEL);
-    motor(pwm_value, R_CHANNEL);
+    motor(-pwm_value, R_CHANNEL);
     
     // salvar dados
     data.t = (time - t0)/usTOs;
@@ -99,7 +99,7 @@ void taskControl(void* pvParameter) {
       digitalWrite(2, HIGH);
 
       printf("End Control\n");
-      printf("Configuration Mode (l:list, f:format, r:read)\n");
+      printf("Configuration Mode (l:list, f:format, r:read and format, R:read only)\n");
       break;
     }
 
