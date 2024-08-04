@@ -47,9 +47,8 @@
 typedef struct {
   float t;
   int u;
-  float yr;
-  float yl;
-  float t_trig;
+  long int yr;
+  long int yl;
   float freq;
   float dtheta;
 } Data;

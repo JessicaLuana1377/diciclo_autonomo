@@ -236,6 +236,6 @@ void InitSetup()
   }
 
   // Serial.println("Criando a TaskBlinkLed");
-  xTaskCreate(&taskBlinkLed, "blink_led", 2048, NULL, 3, NULL);
+  xTaskCreate(&taskBlinkLed, "blink_led", 2048, NULL, 1, NULL);
   while (startMode == INIT) delay(100);
 }
