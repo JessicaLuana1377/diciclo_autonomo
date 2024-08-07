@@ -8,14 +8,14 @@
 // const float f1 = 30;      // Frequência final
 
 // Experimento das rodas
-const float f0 = 0.1;       // Frequência inicial
+const float f0 = 0.2;       // Frequência inicial
 const float f1 = 20;      // Frequência final
 
 const int ts = 10;
-const int T = 60;         // Tempo de uma simulação
+const int T = 120;         // Tempo de uma simulação
 const int uT = T*1000000; // T em microsegundos
 #define SIMULATIONS 2     // Quantidade de simulações
-#define MAX_PWM 50        // Máximo de PWM aplicado
+#define MAX_PWM 30        // Máximo de PWM aplicado
 
 void setup() {
   
@@ -31,13 +31,15 @@ void setup() {
   if (startMode == RUN) {
     digitalWrite(2, LOW);
     printf("Running Mode...\n");
+
+    delay(2000);
     xTaskCreate(&taskControl, "task_control", 4096, NULL, 4, NULL);
   }
 
   // Modo configuração (leitura, formatar) - esperar 5 segundos
   else if (startMode == CONFIG) {
     digitalWrite(2, HIGH);
-    printf("Configuration Mode (l:list, f:format, r:read)\n");
+    printf("Configuration Mode (l:list, f:format, r:read and format, R:read only)\n");
   }
 }
 
