@@ -14,6 +14,7 @@
 #include "FS.h"
 #include "SPIFFS.h"
 
+// Pinos dos encoderes
 #define ENCODER_C1_R 32
 #define ENCODER_C2_R 33 
 #define ENCODER_C1_L 14
@@ -27,10 +28,6 @@
 #define IN3 18
 #define IN4 19
 #define ENB 23
-
-// Canais de PWM
-#define L_CHANNEL 0
-#define R_CHANNEL 1
 
 // Canais de PWM
 #define L_CHANNEL 0
@@ -66,8 +63,6 @@ extern Modes startMode;
 extern Adafruit_MPU6050 mpu;
 extern float g_x_offset;
 extern sensors_event_t a, g, temp;
-extern int16_t ax_b, ay_b, az_b, gx_b, gy_b, gz_b;
-extern float ax, ay, az, gx, gy, gz;
 extern float alpha;     // filtro para leitura
 extern float dtheta, a_pitch, g_x;   // ângulo lido
 
@@ -82,9 +77,6 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels); // lista os arqu
 void motor(int PWM, int chanel);                                // aplica o PWM em um motor 
 int fileCountInit();                                            // inicializa o arquivo fileCount
 
-float getAccelPitch();                                                                // obtem o ângulo pelo acelerômetro
-void getAccelGyro(float *ax, float *ay, float *az, float *gx, float *gy, float *gz);  // obtem os valores dos eixos do acelerômetro e do giroscópio
-float updatePitch(float currentAngle, float loop_period);                             // obtem o ângulo usando o acelerômetro e o giroscópio
 void InitSetup ();                                                                    // inicialização
 
 void taskFlash(void* pvParameter);    // thread que salva os valores na flash

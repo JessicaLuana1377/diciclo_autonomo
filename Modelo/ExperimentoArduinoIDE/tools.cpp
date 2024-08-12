@@ -11,8 +11,6 @@ Modes startMode;
 Adafruit_MPU6050 mpu;
 float g_x_offset = -0.05 + 0.097;
 sensors_event_t a, g, temp;
-int16_t ax_b, ay_b, az_b, gx_b, gy_b, gz_b;
-float ax, ay, az, gx, gy, gz;
 float alpha;
 float dtheta, a_pitch, g_x;
 
