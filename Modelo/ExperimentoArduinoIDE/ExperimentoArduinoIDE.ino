@@ -1,4 +1,3 @@
-// Arquivo simplificado para o fernando
 #include "tools.h"
 
 // CONST VARIABLES

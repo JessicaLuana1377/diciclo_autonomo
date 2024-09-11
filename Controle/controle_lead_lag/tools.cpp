@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "SPIFFS.h"
 #include "tools.h"
 
@@ -5,21 +6,24 @@
 ESP32Encoder encoder_r;
 ESP32Encoder encoder_l;
 
-Data *data_array;
+Data data_array[BUFFER_SIZE];
 
 // MPU6050 mpu;
 Adafruit_MPU6050 mpu;
 float g_x_offset = -0.05 + 0.097;
 sensors_event_t a, g, temp;
-float alpha;
 float dtheta, a_pitch, g_x;
 
-char buffer[50];
-int count;
-int flash_count;
-int file_count;
+int count = 0;
+int count_save = 0;
+int flash_count = 0;
+int file_count = 0;
 
-void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
+volatile bool BootPressed = false;
+volatile bool BlueLED = false;
+
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels)
+{
     Serial.printf("Listing directory: %s\r\n", dirname);
 
     File root = fs.open(dirname);
@@ -75,23 +79,6 @@ void motor(int PWM, int chanel) {
   ledcWrite(chanel, PWM);
 }
 
-int fileCountInit() {
-  int file_count = 0;
-
-  File file = SPIFFS.open(FILE_COUNT_BKP, FILE_READ);
-  if(!file || file.isDirectory()){
-    file_count = 0;
-  }
-  while(file.available()){
-    file.read((uint8_t*)&file_count, sizeof(file_count));
-  }
-  file.close();
-
-  Serial.println("File count init = " + String(file_count));
-
-  return file_count;
-}
-
 void PinSetup() {
   // Configuração dos pinos
   pinMode(IN1, OUTPUT);
@@ -118,35 +105,11 @@ void PinSetup() {
   encoder_r.clearCount();
   encoder_l.clearCount();
 
-  pinMode(2, OUTPUT);
-  digitalWrite(2, LOW);
+  pinMode(BLUE_LED, OUTPUT);
+  digitalWrite(BLUE_LED, BlueLED);
 }
 
-void taskFlash(void* pvParameter) {
-  Data data_read;
-  while(1) {
-    if (flash_count < count) {
-      data_read = data_array[flash_count % BUFFER_SIZE];
-      // printf("-7.5,7.5,%f,%f,%f,%f,%f,%f\n", data_read.theta, data_read.dtheta, data_read.wheel, data_read.dwheel, data_read.dwheel_f, data_read.u);
-      // printf("-3.14,3.14,%f,%f,%f\n", error_theta[0], error_theta[1], error_theta[2]);
-
-      flash_count++;
-    }
-    vTaskDelay(pdMS_TO_TICKS(1));
-  }
-
-  vTaskDelete(NULL);
-}
-
-void InitSetup()
-{
-
-  // Inicialização de variáveis
-  alpha = 0.98;
-  count = 0;
-  flash_count = 0;
-  file_count = 0;
-
+void InitSetup() {
   PinSetup();
 
   Wire.begin();
@@ -171,11 +134,69 @@ void InitSetup()
   }
   file_count = fileCountInit();
 
-  data_array = (Data*)heap_caps_calloc(BUFFER_SIZE, sizeof(Data), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-  if (data_array == NULL) {
-    Serial.println("Malloc for 'data_array' has failed!");
+  // data_array = (Data*)heap_caps_calloc(BUFFER_SIZE, sizeof(Data), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+  // if (data_array == NULL) {
+  //   Serial.println("Malloc for 'data_array' has failed!");
+  //   return;
+  // }
+
+  pinMode(BUTTON_BOOT, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_BOOT), StopControl, FALLING);
+}
+
+void DataSave () {
+  String filename = "/arquivo" + String(file_count) + ".csv";
+  Serial.println(filename);
+  File file = SPIFFS.open(filename, FILE_WRITE);
+  if(!file){
+    Serial.println("- failed to open file for writing");
     return;
   }
+
+  Data data_read;
+  while(1) {
+    if (flash_count < count_save) {
+      data_read = data_array[flash_count % BUFFER_SIZE];
+
+      file.write((const uint8_t*)&data_read, sizeof(Data));
+
+      flash_count++;
+    } else {
+      file.close();
+
+      file_count++;
+      file = SPIFFS.open(FILE_COUNT_BKP, FILE_WRITE);
+      if(!file || file.isDirectory()) {
+        Serial.println("- failed to open file bkp for something");
+      }
+      file.write((uint8_t*)&file_count, sizeof(file_count));
+      file.close();
+
+      printf("End\n");
+      break;
+    }
+  }
+}
+
+int fileCountInit() {
+  int file_count = 0;
+
+  File file = SPIFFS.open(FILE_COUNT_BKP, FILE_READ);
+  if(!file || file.isDirectory()){
+    file_count = 0;
+  }
+  while(file.available()){
+    file.read((uint8_t*)&file_count, sizeof(file_count));
+  }
+  file.close();
+
+  Serial.println("File count init = " + String(file_count));
+
+  return file_count;
+}
+
+void IRAM_ATTR StopControl() {
+  BootPressed = true;
 }
 
 void calibrate_MPU() {

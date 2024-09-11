@@ -40,38 +40,47 @@
 #define BUFFER_SIZE 2000
 #define FILE_COUNT_BKP "/file_count.bkp"
 
+#define usTOs 1000000.0
+#define BUTTON_BOOT 0
+#define BLUE_LED 2
+extern volatile bool BlueLED;
+extern volatile bool BootPressed;
+
 typedef struct {
-  float dwheel;
-  float dwheel_f;
-  float dtheta; 
-  float theta;
-  float wheel;
-  float u;
+  float t;
+  float dwheel; //
+  float dwheel_f; //
+  float dtheta; //
+  float theta; //
+  float wheel; //
+  int u; //
 } Data;
 
 // GLOBALS VARIABLES
 extern ESP32Encoder encoder_r;
 extern ESP32Encoder encoder_l;
 
-extern Data *data_array;
+extern Data data_array[BUFFER_SIZE];
 
 extern Adafruit_MPU6050 mpu;
 extern float g_x_offset;
 extern sensors_event_t a, g, temp;
-extern float alpha;     // filtro para leitura
 extern float dtheta, a_pitch, g_x;   // ângulo lido
 
 // variaveis para arquivo
-extern char buffer[50];
 extern int count;
+extern int count_save;
 extern int flash_count;
 extern int file_count;
 
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels);
 void motor(int PWM, int chanel);
-int fileCountInit();
+int fileCountInit();  
+void DataSave();
 
 void InitSetup ();                                                                    // inicialização
 void calibrate_MPU();
+void IRAM_ATTR StopControl();
 
 void taskFlash(void* pvParameter);    // thread que salva os valores na flash
 
