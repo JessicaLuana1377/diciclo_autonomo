@@ -54,7 +54,7 @@ E por fim, complete o circuito seguindo o diagrama elétrico  representado na fi
 3. Instale a placa do ESP32 no Arduino IDE. Abra o Arduino IDE, vá em Tools > Board > Board Manager, pesquise por esp32 by Espressif Systems, selecione a versão 2.0.17 e instale.
 4. Instale as bibliotecas usadas no projeto. Vá em Sketch > Include Library > Manage Libraries pesquise e instale as bibliotecas: ESP32Encoder by Kevin Harriongton versão 0.11.6 e Adafruit MPU6040 by Adafruit versão 2.2.6 (Baixe todas as dependências dessa biblioteca).
 
-Qualquer dúvida, o procedimento está mais detalhado na seção 2.4 do Manual (posteriormente, será inserido um manual em PDF no repositório).
+Qualquer dúvida, o procedimento está mais detalhado na seção 2.4 do [Manual de desenvoltimento](https://github.com/JessicaLuana1377/diciclo_autonomo/blob/main/Manual%20de%20desenvolvimento.pdf).
 
 Realizando todos os passos corretamente, é possivel carregar qualquer um dos códigos disponíveis no ESP32.
 
