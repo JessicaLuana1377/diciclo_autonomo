@@ -2,7 +2,7 @@
 
 Este repositório reúne todos os recursos necessários para o desenvolvimento de um diciclo autônomo, também conhecido como pêndulo invertido sobre rodas. Nele, você encontrará códigos para modelagem, controle e experimentação, bem como técnicas para a identificação de parâmetros complexos que são cruciais para o comportamento dinâmico do sistema. Além disso, o repositório oferece materiais que abrangem tanto a parte teórica, para o entendimento do funcionamento, quanto a parte prática, voltada para a construção e implementação do projeto.
 
-![](./assets/pendulum.jpg)
+
 ## Tabela de conteúdos
 - [Motivação](#motivação)
 - [Primeiros passos](#primeiros-passos)
@@ -36,11 +36,15 @@ Este repositório reúne todos os recursos necessários para o desenvolvimento d
 
 #### Montagem
 
-Inicialmente, monte os componentes na estrutura conforme a figura abaixo:
-##### Figura
+Inicialmente, monte os componentes na estrutura conforme as figuras abaixo:
+
+![](./assets/Front_clean.png)
+![](./assets/Back_clean.png)
+
 Em seguida, solde um dos terminais da chave On/Off com o cabo e o outro terminal com a alimentação do suporte de pilha (cabo vermelho).
 E por fim, complete o circuito seguindo o diagrama elétrico  representado na figura abaixo:
-##### Figura
+
+![](./assets/Diagrama_eletrico.png)
 
 
 #### Software 
@@ -66,11 +70,11 @@ Realizando todos os passos corretamente, é possivel carregar qualquer um dos c�
       - Um arquivo .txt com dados experimentais de exemplo do controle.
 
 ## Modelagem
-A modelagem do sistema está disponível no arquivo "Modelo_novo.mlx", na pasta [Modelo](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Modelo). Para obter o modelo corretamente, deve-se alterar os valores das variáveis no tópico "Valores das variáveis" dentro do arquivo e executar os experimentos do [Corpo](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Modelo/Corpo) e das [Rodas](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Modelo/Rodas), antes de executar o arquivo "Modelo_novo.mlx". Após realizar os experimentos, execute o arquivo "Modelo_novo.mlx" e ele irá gerar o modelo do seu pêndulo e exportar os dados necessários para a pasta de [Controle]. Evite trocar os arquivos de diretórios para que funcionem corretamente.
+A modelagem do sistema está disponível no arquivo "Modelo_novo.mlx", na pasta [Modelo](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Modelo). Para obter o modelo corretamente, deve-se alterar os valores das variáveis no tópico "Valores das variáveis" dentro do arquivo e executar os experimentos do [Corpo](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Modelo/Corpo) e das [Rodas](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Modelo/Rodas), antes de executar o arquivo "Modelo_novo.mlx". Após realizar os experimentos, execute o arquivo "Modelo_novo.mlx" e ele irá gerar o modelo do seu pêndulo e exportar os dados necessários para a pasta de [Controle](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Controle). Evite trocar os arquivos de diretórios para que funcionem corretamente.
 
 ## Controle
-Na pasta [Controle] está disponível o desenvolvimento de um controlador Compensador de Avanço e Atraso no arquivo "Compensador.mlx". O arquivo "fts.mat" deve ter sido gerado a partir do seu modelo, portanto, tenha certeza que o arquivo de modelagem foi completamente executado antes de vir para este passo. Após realizar os ajustes necessários no controlador, pegue os ganhos disponíveis no tópico "Ganhos discretizados dos controladores" e substitua no arquivo "controle_lead_lag.ino" disponível na pasta [controle_lead_lag]. Teste seu controlador e realize ajustes finos caso seja necessário.
-Outro controlador esta disponível na pasta [Controle], é um controlador avançado LQR com integrador e uma implementação simples de um filtro de Kalman, caso tenha curiosidade, teste no seu pêndulo.
+Na pasta [Controle](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Controle) está disponível o desenvolvimento de um controlador Compensador de Avanço e Atraso no arquivo "Compensador.mlx". O arquivo "fts.mat" deve ter sido gerado a partir do seu modelo, portanto, tenha certeza que o arquivo de modelagem foi completamente executado antes de vir para este passo. Após realizar os ajustes necessários no controlador, pegue os ganhos disponíveis no tópico "Ganhos discretizados dos controladores" e substitua no arquivo "controle_lead_lag.ino" disponível na pasta [controle_lead_lag](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Controle/controle_lead_lag). Teste seu controlador e realize ajustes finos caso seja necessário.
+Outro controlador esta disponível na pasta [Controle](https://github.com/JessicaLuana1377/diciclo_autonomo/tree/main/Controle), é um controlador avançado LQR com integrador e uma implementação simples de um filtro de Kalman, caso tenha curiosidade, teste no seu pêndulo.
 
 ## Credits
 
