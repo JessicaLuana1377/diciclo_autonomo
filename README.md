@@ -2,6 +2,7 @@
 
 Este repositório reúne todos os recursos necessários para o desenvolvimento de um diciclo autônomo, também conhecido como pêndulo invertido sobre rodas. Nele, você encontrará códigos para modelagem, controle e experimentação, bem como técnicas para a identificação de parâmetros complexos que são cruciais para o comportamento dinâmico do sistema. Além disso, o repositório oferece materiais que abrangem tanto a parte teórica, para o entendimento do funcionamento, quanto a parte prática, voltada para a construção e implementação do projeto.
 
+![](./assets/pendulo_invertido.gif)
 
 ## Tabela de conteúdos
 - [Motivação](#motivação)
